@@ -37,32 +37,25 @@
         #success-page { display: none; }
         .wheel-box {
             position: relative; width: 280px; height: 280px;
-            margin: 0 auto 30px auto; border: 5px solid white;
-            border-radius: 50%; box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin: 0 auto 30px auto; border: 8px solid white;
+            border-radius: 50%; box-shadow: 0 0 25px rgba(255, 77, 109, 0.2);
         }
         .wheel {
             width: 100%; height: 100%; border-radius: 50%;
             position: relative; overflow: hidden;
             transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
-            /* แก้ไขให้กงล้อไม่บังการกดตอนที่ยังไม่แสดงผล */
             pointer-events: none; 
         }
         .pointer {
-            position: absolute; top: -20px; left: 50%;
+            position: absolute; top: -25px; left: 50%;
             transform: translateX(-50%); width: 0; height: 0;
-            border-left: 15px solid transparent; border-right: 15px solid transparent;
-            border-top: 30px solid var(--primary-pink); z-index: 100;
+            border-left: 18px solid transparent; border-right: 18px solid transparent;
+            border-top: 35px solid var(--primary-pink); z-index: 100;
         }
         .sector {
             position: absolute; width: 50%; height: 50%;
             transform-origin: 100% 100%; left: 0; top: 0;
-            display: flex; align-items: center; justify-content: center;
-            color: #333; font-weight: bold; font-size: 11px;
-            padding-right: 20px;
-        }
-        .sector span {
-            transform: rotate(45deg); display: block; text-align: center;
-            width: 70px; line-height: 1.2;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         /* Modal */
@@ -137,7 +130,6 @@
         let isSpinning = false;
 
         function handleChoice(picked) {
-            console.log("Picked:", picked); // เช็คว่าฟังก์ชันทำงานไหม
             if (picked === quizData[currentStep].a) score++;
             currentStep++;
             if (currentStep < quizData.length) updateQuestion();
@@ -171,7 +163,7 @@
 
         function createWheel() {
             const wheel = document.getElementById('wheel');
-            wheel.innerHTML = ''; // เคลียร์ของเก่าก่อนสร้างใหม่
+            wheel.innerHTML = ''; 
             const numPrizes = prizes.length;
             const angleSize = 360 / numPrizes;
 
@@ -180,12 +172,6 @@
                 sector.className = 'sector';
                 sector.style.backgroundColor = colors[i];
                 sector.style.transform = `rotate(${i * angleSize}deg) skewY(${90 - angleSize}deg)`;
-                
-                const span = document.createElement('span');
-                span.innerText = text;
-                span.style.transform = `skewY(-${90 - angleSize}deg) rotate(${angleSize / 2}deg)`;
-                
-                sector.appendChild(span);
                 wheel.appendChild(sector);
             });
         }
