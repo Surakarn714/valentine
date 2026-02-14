@@ -6,7 +6,7 @@
     <title>Valentine Quest ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-pink: #ff4d6d; --bg-soft: #fff0f3; --wrap-pink: #ffb1c1; }
+        :root { --primary-pink: #ff4d6d; --bg-soft: #fff0f3; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             font-family: 'Kanit', sans-serif; background-color: var(--bg-soft); 
@@ -32,75 +32,39 @@
         }
         .choice-btn:active { background: var(--primary-pink); color: white; transform: scale(0.98); }
 
-        /* Pop-up Overlay */
+        /* Wheel Styles */
+        #success-page { display: none; }
+        .wheel-container {
+            position: relative; width: 300px; height: 300px;
+            margin: 0 auto 20px auto;
+        }
+        canvas { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .pointer {
+            position: absolute; top: -10px; left: 50%;
+            transform: translateX(-50%); width: 0; height: 0;
+            border-left: 15px solid transparent; border-right: 15px solid transparent;
+            border-top: 30px solid var(--primary-pink); z-index: 20;
+        }
+
+        #result-display {
+            margin-top: 20px; font-size: 1.2rem; font-weight: bold;
+            color: var(--primary-pink); min-height: 1.5em;
+        }
+
+        /* Result Popup */
         #modal-overlay {
             display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9);
+            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85);
             z-index: 100; justify-content: center; align-items: center;
         }
-
         .modal-content {
-            background: white; width: 90%; max-width: 380px;
-            padding: 25px; border-radius: 30px; text-align: center;
-            position: relative; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white; width: 85%; max-width: 320px;
+            padding: 30px; border-radius: 25px; text-align: center;
+            animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        /* ดีไซน์ช่อดอกไม้แบบใหม่ */
-        .bouquet-container {
-            position: relative; width: 260px; height: 320px;
-            margin: 10px auto; overflow: visible;
-        }
-
-        /* กระดาษห่อหลายชั้น */
-        .wrap-layer {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--wrap-pink); z-index: 2;
-        }
-        .wrap-outer {
-            width: 180px; height: 140px;
-            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
-            background: linear-gradient(180deg, #ffc2d1 0%, #ff8fa3 100%);
-            border-radius: 0 0 40px 40px;
-        }
-        .wrap-inner {
-            width: 200px; height: 100px; bottom: 60px;
-            background: rgba(255, 255, 255, 0.3);
-            clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%);
-            z-index: 3;
-        }
-        .ribbon {
-            position: absolute; bottom: 40px; left: 50%;
-            transform: translateX(-50%); z-index: 5; font-size: 45px;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1));
-        }
-
-        /* พื้นที่ดอกไม้ */
-        #flower-spawn-area {
-            position: absolute; top: 0; left: 50%;
-            transform: translateX(-50%); width: 220px; height: 180px;
-            z-index: 1; /* อยู่หลังกระดาษห่อ */
-        }
-
-        .rose-item {
-            position: absolute; font-size: 32px;
-            animation: bloom 0.6s ease-out forwards;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
-        }
-
-        @keyframes bloom {
-            0% { transform: scale(0) translateY(40px) rotate(-10deg); opacity: 0; }
-            100% { transform: scale(1) translateY(0) rotate(var(--r)); opacity: 1; }
-        }
-
         @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* UI อื่นๆ */
-        #result-page, #success-page { display: none; }
-        input[type="number"] {
-            width: 120px; padding: 12px; border-radius: 15px;
-            border: 2px solid #ffccd5; text-align: center; font-size: 1.4rem; font-weight: bold;
-            color: var(--primary-pink); outline: none;
-        }
+        #result-page { display: none; }
     </style>
 </head>
 <body>
@@ -118,36 +82,32 @@
         <div id="result-page">
             <div style="font-size: 60px;">😢</div>
             <h2 id="result-text">ตอบผิดน้าาา!</h2>
-            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">ลองใหม่นะ สู้ๆ!</button>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">ลองใหม่นะ</button>
         </div>
 
         <div id="success-page">
-            <div style="font-size: 60px;">💖</div>
-            <h2 style="min-height: auto; margin-bottom: 10px;">เก่งที่สุดเลย!</h2>
-            <p>อยากได้กุหลาบกี่ดอกครับคนดี?</p>
-            <input type="number" id="flower-count" min="1" max="100" value="9">
-            <p style="font-size: 0.8rem; color: #ff8fa3;">(แนะนำ 1-50 ดอกกำลังสวยครับ)</p>
-            <button onclick="generateBouquet()" style="width: 100%; padding: 18px; background: var(--primary-pink); color:white; border:none; border-radius:20px; font-weight: bold; font-size: 1.2rem; cursor: pointer; margin-top: 10px;">เสกช่อดอกไม้พรีเมียม 🌹</button>
+            <h2 style="min-height: auto; margin-bottom: 10px;">เก่งมาก! รับสิทธิ์สุ่มรางวัล 🎁</h2>
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+            </div>
+            <button id="spin-btn" onclick="spinWheel()" style="width: 100%; padding: 18px; background: var(--primary-pink); color:white; border:none; border-radius:20px; font-weight: bold; font-size: 1.2rem; cursor: pointer;">กดสุ่มดวงเลย! 🎡</button>
+            <p style="color: #999; font-size: 0.8rem; margin-top: 15px;">รักเธอนะจ๊ะ สุขสันต์วันวาเลนไทน์!</p>
         </div>
     </div>
 
     <div id="modal-overlay">
         <div class="modal-content">
-            <h3 style="color: var(--primary-pink); margin-top: 0;">ให้เธอนะครับ ❤️</h3>
-            
-            <div class="bouquet-container">
-                <div id="flower-spawn-area"></div>
-                <div class="wrap-layer wrap-outer"></div>
-                <div class="wrap-layer wrap-inner"></div>
-                <div class="ribbon">🎀</div>
-            </div>
-
-            <p id="flower-msg" style="font-weight: bold; font-size: 1.1rem; color: #333; margin: 10px 0;"></p>
-            <button class="choice-btn" style="background: var(--primary-pink); color: white; border: none;" onclick="closeModal()">รับไว้ด้วยความรัก (ปิด)</button>
+            <h2 style="min-height: auto; margin-bottom: 10px;">ยินดีด้วยจ้า! 🎉</h2>
+            <p>รางวัลที่เธอสุ่มได้คือ...</p>
+            <h1 id="final-prize" style="color: var(--primary-pink); margin: 20px 0;"></h1>
+            <p style="font-size: 0.9rem; color: #666;">(แคปหน้าจอนี้มาทวงได้เลยนะ!)</p>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white; border: none; margin-top: 15px;" onclick="closeModal()">รับทราบจ้า ❤️</button>
         </div>
     </div>
 
     <script>
+        // ข้อมูลคำถาม
         const quizData = [
             { q: "ใครกินเก่งที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} },
             { q: "ใครขี้งอแงที่สุด?", a: "ข", choices: {ก: "ไตเติ้ล", ข: "เธอ"} },
@@ -156,8 +116,17 @@
             { q: "ใครดื้อที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} }
         ];
 
-        let currentStep = 0, score = 0;
+        // รายการกงล้อ
+        const prizes = ["เลี้ยงตี๋น้อย", "เลี้ยงขนม", "ซื้อดอกไม้ให้", "ซื้อของให้ 1 อย่าง", "กอด 1 ที", "จุ๊บ 1 ที", "เตะตูด 1 ที"];
+        const colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff"];
 
+        let currentStep = 0, score = 0;
+        let startAngle = 0;
+        const arc = Math.PI / (prizes.length / 2);
+        let spinTimeout = null;
+        let isSpinning = false;
+
+        // ฟังก์ชัน Quiz (เหมือนเดิม)
         function handleChoice(picked) {
             if (picked === quizData[currentStep].a) score++;
             currentStep++;
@@ -174,10 +143,12 @@
 
         function showFinalResult() {
             document.getElementById('quiz-page').style.display = 'none';
-            if (score === 5) document.getElementById('success-page').style.display = 'block';
-            else {
+            if (score === 5) {
+                document.getElementById('success-page').style.display = 'block';
+                drawWheel();
+            } else {
                 document.getElementById('result-page').style.display = 'block';
-                document.getElementById('result-text').innerText = `ถูกไปแค่ ${score} ข้อเอง... ต้องถูกหมดน้า!`;
+                document.getElementById('result-text').innerText = `ถูกแค่ ${score} ข้อ... ต้องถูกหมดถึงจะได้สุ่มนะ!`;
             }
         }
 
@@ -188,41 +159,77 @@
             updateQuestion();
         }
 
-        function generateBouquet() {
-            const count = document.getElementById('flower-count').value;
-            const area = document.getElementById('flower-spawn-area');
-            const overlay = document.getElementById('modal-overlay');
-            
-            if (count <= 0) return alert("ใส่จำนวนดอกไม้ก่อนน้าคนเก่ง");
+        // ระบบกงล้อ
+        function drawWheel() {
+            const canvas = document.getElementById("wheelCanvas");
+            if (!canvas.getContext) return;
+            const ctx = canvas.getContext("2d");
+            const outsideRadius = 240;
+            const textRadius = 160;
+            const insideRadius = 50;
 
-            area.innerHTML = '';
-            overlay.style.display = 'flex';
-            document.getElementById('flower-msg').innerText = `กุหลาบ ${count} ดอก สำหรับคนพิเศษ`;
+            ctx.clearRect(0, 0, 500, 500);
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 2;
+            ctx.font = 'bold 22px Kanit';
 
-            const max = Math.min(count, 100); 
-            for(let i=0; i < max; i++) {
-                setTimeout(() => {
-                    const rose = document.createElement('div');
-                    rose.classList.add('rose-item');
-                    rose.innerHTML = '🌹';
-                    
-                    // Logic จัดเรียงแบบกระจายพุ่ม (วงรี)
-                    const angle = Math.random() * Math.PI * 2;
-                    const radiusX = Math.random() * 80;
-                    const radiusY = Math.random() * 50;
-                    
-                    const left = 50 + (Math.cos(angle) * radiusX / 1.1);
-                    const top = 50 + (Math.sin(angle) * radiusY / 1.1);
-                    const rotate = (Math.random() * 60) - 30;
+            for (let i = 0; i < prizes.length; i++) {
+                const angle = startAngle + i * arc;
+                ctx.fillStyle = colors[i];
 
-                    rose.style.left = left + '%';
-                    rose.style.top = top + '%';
-                    rose.style.setProperty('--r', rotate + 'deg');
-                    rose.style.zIndex = Math.floor(top); // ให้ดอกล่างทับดอกบนแบบสมจริง
-                    
-                    area.appendChild(rose);
-                }, i * 60);
+                ctx.beginPath();
+                ctx.arc(250, 250, outsideRadius, angle, angle + arc, false);
+                ctx.arc(250, 250, insideRadius, angle + arc, angle, true);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = "black";
+                ctx.translate(250 + Math.cos(angle + arc / 2) * textRadius, 250 + Math.sin(angle + arc / 2) * textRadius);
+                ctx.rotate(angle + arc / 2 + Math.PI / 2);
+                const text = prizes[i];
+                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                ctx.restore();
             }
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const spinAngleStart = Math.random() * 10 + 10;
+            let spinTime = 0;
+            const spinTimeTotal = Math.random() * 3 + 4 * 1000;
+
+            function rotate() {
+                spinTime += 30;
+                if (spinTime >= spinTimeTotal) {
+                    stopRotate();
+                    return;
+                }
+                const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+                startAngle += (spinAngle * Math.PI / 180);
+                drawWheel();
+                spinTimeout = setTimeout(rotate, 30);
+            }
+            rotate();
+        }
+
+        function stopRotate() {
+            clearTimeout(spinTimeout);
+            const degrees = startAngle * 180 / Math.PI + 90;
+            const arcd = arc * 180 / Math.PI;
+            const index = Math.floor((360 - degrees % 360) / arcd);
+            const prize = prizes[index];
+            
+            document.getElementById('final-prize').innerText = prize;
+            document.getElementById('modal-overlay').style.display = 'flex';
+            isSpinning = false;
+        }
+
+        function easeOut(t, b, c, d) {
+            const ts = (t /= d) * t;
+            const tc = ts * t;
+            return b + c * (tc + -3 * ts + 3 * t);
         }
 
         function closeModal() {
