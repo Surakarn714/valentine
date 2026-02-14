@@ -23,6 +23,7 @@
 
         h2 { color: var(--primary-pink); font-size: 1.3rem; margin-bottom: 25px; min-height: 3em; display: flex; align-items: center; justify-content: center; }
 
+        /* Quiz Styles */
         .choice-container { display: grid; gap: 15px; }
         .choice-btn {
             width: 100%; padding: 15px; background: white;
@@ -34,33 +35,44 @@
 
         /* Wheel Styles */
         #success-page { display: none; }
-        .wheel-container {
+        .wheel-box {
             position: relative; width: 300px; height: 300px;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 30px auto; border: 5px solid white;
+            border-radius: 50%; box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-        canvas { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .wheel {
+            width: 100%; height: 100%; border-radius: 50%;
+            position: relative; overflow: hidden;
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+        }
         .pointer {
-            position: absolute; top: -10px; left: 50%;
+            position: absolute; top: -20px; left: 50%;
             transform: translateX(-50%); width: 0; height: 0;
             border-left: 15px solid transparent; border-right: 15px solid transparent;
-            border-top: 30px solid var(--primary-pink); z-index: 20;
+            border-top: 30px solid var(--primary-pink); z-index: 100;
+        }
+        .sector {
+            position: absolute; width: 50%; height: 50%;
+            transform-origin: 100% 100%; left: 0; top: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #333; font-weight: bold; font-size: 12px;
+            padding-right: 20px;
+        }
+        .sector span {
+            transform: rotate(45deg); display: block; text-align: center;
+            width: 80px; line-height: 1.2;
         }
 
-        #result-display {
-            margin-top: 20px; font-size: 1.2rem; font-weight: bold;
-            color: var(--primary-pink); min-height: 1.5em;
-        }
-
-        /* Result Popup */
+        /* Modal */
         #modal-overlay {
             display: none; position: fixed; top: 0; left: 0;
             width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85);
-            z-index: 100; justify-content: center; align-items: center;
+            z-index: 1000; justify-content: center; align-items: center;
         }
         .modal-content {
             background: white; width: 85%; max-width: 320px;
             padding: 30px; border-radius: 25px; text-align: center;
-            animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: popUp 0.4s ease-out;
         }
         @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -81,33 +93,30 @@
 
         <div id="result-page">
             <div style="font-size: 60px;">😢</div>
-            <h2 id="result-text">ตอบผิดน้าาา!</h2>
-            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">ลองใหม่นะ</button>
+            <h2 id="result-text">ตอบผิดดด</h2>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">ลองใหม่จ้า</button>
         </div>
 
         <div id="success-page">
-            <h2 style="min-height: auto; margin-bottom: 10px;">เก่งมาก! รับสิทธิ์สุ่มรางวัล 🎁</h2>
-            <div class="wheel-container">
+            <h2 style="min-height: auto; margin-bottom: 20px;">สุดยอด สุ่มรางวัล 1 อย่าง 🎁</h2>
+            <div class="wheel-box">
                 <div class="pointer"></div>
-                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                <div id="wheel" class="wheel"></div>
             </div>
-            <button id="spin-btn" onclick="spinWheel()" style="width: 100%; padding: 18px; background: var(--primary-pink); color:white; border:none; border-radius:20px; font-weight: bold; font-size: 1.2rem; cursor: pointer;">กดสุ่มดวงเลย! 🎡</button>
-            <p style="color: #999; font-size: 0.8rem; margin-top: 15px;">รักเธอนะจ๊ะ สุขสันต์วันวาเลนไทน์!</p>
+            <button id="spin-btn" onclick="spinNow()" style="width: 100%; padding: 18px; background: var(--primary-pink); color:white; border:none; border-radius:20px; font-weight: bold; font-size: 1.2rem; cursor: pointer;">กดสุ่มดวงเลย! 🎡</button>
         </div>
     </div>
 
     <div id="modal-overlay">
         <div class="modal-content">
-            <h2 style="min-height: auto; margin-bottom: 10px;">ยินดีด้วยจ้า! 🎉</h2>
-            <p>รางวัลที่เธอสุ่มได้คือ...</p>
-            <h1 id="final-prize" style="color: var(--primary-pink); margin: 20px 0;"></h1>
-            <p style="font-size: 0.9rem; color: #666;">(แคปหน้าจอนี้มาทวงได้เลยนะ!)</p>
-            <button class="choice-btn" style="background: var(--primary-pink); color: white; border: none; margin-top: 15px;" onclick="closeModal()">รับทราบจ้า ❤️</button>
+            <h2 style="min-height: auto;">ยินดีด้วย! 🎉</h2>
+            <p>รางวัลที่สุ่มได้คือ...</p>
+            <h1 id="final-prize" style="color: var(--primary-pink); margin: 20px 0; font-size: 2rem;"></h1>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white; border: none;" onclick="closeModal()">รับทราบ ❤️</button>
         </div>
     </div>
 
     <script>
-        // ข้อมูลคำถาม
         const quizData = [
             { q: "ใครกินเก่งที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} },
             { q: "ใครขี้งอแงที่สุด?", a: "ข", choices: {ก: "ไตเติ้ล", ข: "เธอ"} },
@@ -116,103 +125,100 @@
             { q: "ใครดื้อที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} }
         ];
 
-        // รายการกงล้อ
-        const prizes = ["เลี้ยงตี๋น้อย", "เลี้ยงขนม", "ซื้อดอกไม้ให้", "ซื้อของให้ 1 อย่าง", "กอด 1 ที", "จุ๊บ 1 ที", "เตะตูด 1 ที"];
-    const colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff"];
+        const prizes = [
+            "กอด 1 ที", "เลี้ยงขนม", "เตะตูด 1 ที", 
+            "ซื้อของให้ 1 อย่าง", "เลี้ยงตี๋น้อย", "จุ๊บ 1 ที", "ซื้อดอกไม้ให้"
+        ];
+        const colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff"];
 
-    let currentStep = 0, score = 0;
-    let startAngle = 0;
-    const arc = Math.PI / (prizes.length / 2);
-    let spinTimeout = null;
-    let isSpinning = false;
+        let currentStep = 0, score = 0;
+        let isSpinning = false;
 
-    // ... ส่วนของฟังก์ชัน Quiz เหมือนเดิม ...
-
-    function drawWheel() {
-        const canvas = document.getElementById("wheelCanvas");
-        if (!canvas.getContext) return;
-        const ctx = canvas.getContext("2d");
-        const outsideRadius = 240;
-        const textRadius = 160;
-        const insideRadius = 50;
-
-        ctx.clearRect(0, 0, 500, 500);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.font = 'bold 20px Kanit';
-
-        for (let i = 0; i < prizes.length; i++) {
-            // ปรับมุมเริ่มวาดเพื่อให้สอดคล้องกับเข็มด้านบน
-            const angle = startAngle + i * arc;
-            ctx.fillStyle = colors[i];
-
-            ctx.beginPath();
-            ctx.arc(250, 250, outsideRadius, angle, angle + arc, false);
-            ctx.arc(250, 250, insideRadius, angle + arc, angle, true);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.save();
-            ctx.fillStyle = "black";
-            // คำนวณตำแหน่งตัวหนังสือ
-            ctx.translate(250 + Math.cos(angle + arc / 2) * textRadius, 250 + Math.sin(angle + arc / 2) * textRadius);
-            ctx.rotate(angle + arc / 2 + Math.PI / 2);
-            const text = prizes[i];
-            ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
-            ctx.restore();
+        // --- Quiz Logic ---
+        function handleChoice(picked) {
+            if (picked === quizData[currentStep].a) score++;
+            currentStep++;
+            if (currentStep < quizData.length) updateQuestion();
+            else showFinalResult();
         }
-    }
 
-    function spinWheel() {
-        if (isSpinning) return;
-        isSpinning = true;
-        // สุ่มแรงหมุนเริ่มต้น
-        const spinAngleStart = Math.random() * 10 + 15;
-        let spinTime = 0;
-        // สุ่มระยะเวลาหมุน 4-7 วินาที
-        const spinTimeTotal = Math.random() * 3000 + 4000;
+        function updateQuestion() {
+            document.getElementById('step-counter').innerText = `ข้อที่ ${currentStep + 1}/5 ❤️`;
+            document.getElementById('question').innerText = quizData[currentStep].q;
+            document.getElementById('choice-a').innerText = quizData[currentStep].choices.ก;
+            document.getElementById('choice-b').innerText = quizData[currentStep].choices.ข;
+        }
 
-        function rotate() {
-            spinTime += 30;
-            if (spinTime >= spinTimeTotal) {
-                stopRotate();
-                return;
+        function showFinalResult() {
+            document.getElementById('quiz-page').style.display = 'none';
+            if (score === 5) {
+                document.getElementById('success-page').style.display = 'block';
+                createWheel();
+            } else {
+                document.getElementById('result-page').style.display = 'block';
+                document.getElementById('result-text').innerText = `ถูกแค่ ${score} ข้อเอง... ต้องถูกหมดเด้อ`;
             }
-            const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
-            startAngle += (spinAngle * Math.PI / 180);
-            drawWheel();
-            spinTimeout = setTimeout(rotate, 30);
         }
-        rotate();
-    }
 
-    function stopRotate() {
-        clearTimeout(spinTimeout);
-        
-        // แก้ไข Logic การคำนวณรางวัล:
-        // เข็มอยู่ด้านบนคือ -90 องศา (หรือ 270 องศา)
-        // ต้องนำ startAngle มาหารหาตำแหน่ง Index ที่แม่นยำ
-        const degrees = startAngle * 180 / Math.PI + 90; 
-        const arcd = arc * 180 / Math.PI;
-        const index = Math.floor((360 - (degrees % 360)) / arcd) % prizes.length;
-        
-        const prize = prizes[index];
-        
-        // แสดงผลใน Pop-up
-        document.getElementById('final-prize').innerText = prize;
-        document.getElementById('modal-overlay').style.display = 'flex';
-        isSpinning = false;
-    }
+        function resetQuiz() {
+            currentStep = 0; score = 0;
+            document.getElementById('quiz-page').style.display = 'block';
+            document.getElementById('result-page').style.display = 'none';
+            updateQuestion();
+        }
 
-    function easeOut(t, b, c, d) {
-        const ts = (t /= d) * t;
-        const tc = ts * t;
-        return b + c * (tc + -3 * ts + 3 * t);
-    }
+        // --- Wheel Logic ---
+        function createWheel() {
+            const wheel = document.getElementById('wheel');
+            const numPrizes = prizes.length;
+            const angleSize = 360 / numPrizes;
 
-    function closeModal() {
-        document.getElementById('modal-overlay').style.display = 'none';
-    }
-</script>
+            prizes.forEach((text, i) => {
+                const sector = document.createElement('div');
+                sector.className = 'sector';
+                sector.style.backgroundColor = colors[i];
+                // หมุนตำแหน่งของแต่ละช่อง
+                sector.style.transform = `rotate(${i * angleSize}deg) skewY(${90 - angleSize}deg)`;
+                
+                const span = document.createElement('span');
+                span.innerText = text;
+                // ปรับมุมตัวหนังสือให้ตั้งตรง (กึ่งกลางช่อง)
+                span.style.transform = `skewY(-${90 - angleSize}deg) rotate(${angleSize / 2}deg)`;
+                
+                sector.appendChild(span);
+                wheel.appendChild(sector);
+            });
+        }
+
+        function spinNow() {
+            if (isSpinning) return;
+            isSpinning = true;
+            
+            const wheel = document.getElementById('wheel');
+            const numPrizes = prizes.length;
+            const angleSize = 360 / numPrizes;
+            
+            // สุ่มรางวัลล่วงหน้า
+            const winningIndex = Math.floor(Math.random() * numPrizes);
+            const prizeName = prizes[winningIndex];
+
+            // คำนวณองศาที่จะหยุด (เข็มอยู่ด้านบนคือตำแหน่ง 0 องศา)
+            // เราต้องหมุนกงล้อให้ช่องที่สุ่มได้ไปอยู่ที่ตำแหน่ง -90 องศา (หรือ 270)
+            const extraSpins = 5 * 360; // หมุน 5 รอบก่อนหยุด
+            const stopAngle = extraSpins + (360 - (winningIndex * angleSize)) - (angleSize / 2);
+
+            wheel.style.transform = `rotate(${stopAngle}deg)`;
+
+            setTimeout(() => {
+                document.getElementById('final-prize').innerText = prizeName;
+                document.getElementById('modal-overlay').style.display = 'flex';
+                isSpinning = false;
+            }, 4000); // ต้องสัมพันธ์กับ transition ใน CSS
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
