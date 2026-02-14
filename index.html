@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Valentine Quest ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-pink: #ff4d6d; --bg-soft: #fff0f3; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Kanit', sans-serif; background-color: var(--bg-soft); 
+            margin: 0; padding: 20px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden;
+        }
+
+        .card {
+            background: white; width: 100%; max-width: 380px;
+            padding: 30px; border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.2);
+            text-align: center; position: relative; z-index: 10;
+        }
+
+        h2 { color: var(--primary-pink); font-size: 1.3rem; margin-bottom: 25px; min-height: 3em; display: flex; align-items: center; justify-content: center; }
+
+        .choice-container { display: grid; gap: 15px; }
+
+        .choice-btn {
+            width: 100%; padding: 15px; background: white;
+            color: var(--primary-pink); border: 2px solid #ffccd5;
+            border-radius: 15px; font-size: 1.1rem; font-weight: 500;
+            cursor: pointer; transition: 0.2s;
+        }
+        .choice-btn:active { background: var(--primary-pink); color: white; transform: scale(0.98); }
+
+        /* ผลลัพธ์ */
+        #result-page, #success-page { display: none; }
+        .gift-box { font-size: 60px; margin-bottom: 10px; }
+        
+        #flower-garden {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 5px; margin-top: 20px; max-height: 200px; overflow-y: auto;
+            padding: 10px; border-top: 1px dashed #ffccd5;
+        }
+        .rose { font-size: 30px; animation: pop 0.5s ease-out; }
+        
+        input[type="number"] {
+            width: 80px; padding: 10px; border-radius: 10px;
+            border: 2px solid #ffccd5; text-align: center; font-size: 1.2rem;
+        }
+
+        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+        .heart { position: absolute; color: var(--primary-pink); font-size: 20px; animation: moveUp 2s linear forwards; pointer-events: none; }
+        @keyframes moveUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div id="quiz-page">
+            <p id="step-counter" style="color: #ff8fa3; font-size: 0.9rem; margin-bottom: 5px;">คำถามข้อที่ 1/5</p>
+            <h2 id="question">ใครกินเก่งที่สุด?</h2>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="handleChoice('ก')">ก. <span id="choice-a">เธอ</span></button>
+                <button class="choice-btn" onclick="handleChoice('ข')">ข. <span id="choice-b">ไตเติ้ล</span></button>
+            </div>
+        </div>
+
+        <div id="result-page">
+            <div class="gift-box">😢</div>
+            <h2 id="result-text">ตอบผิดไปนิดนึง!</h2>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">เอาใหม่นะ สู้ๆ!</button>
+        </div>
+
+        <div id="success-page">
+            <div class="gift-box">💖</div>
+            <h2>เก่งมาก! ตอบถูกหมดเลย</h2>
+            <p>อยากได้ดอกไม้กี่ดอกครับคนดี?</p>
+            <div style="margin: 20px 0;">
+                <input type="number" id="flower-count" min="1" max="100" placeholder="0">
+                <button onclick="growFlowers()" style="width: auto; padding: 10px 20px; background: var(--primary-pink); color:white; border:none; border-radius:10px;">เสกช่อดอกไม้!</button>
+            </div>
+            <div id="flower-garden"></div>
+            <p style="color: #999; font-size: 0.8rem; margin-top: 15px;">รักเธอนะจ๊ะ สุขสันต์วันวาเลนไทน์!</p>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            { q: "ใครกินเก่งที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} },
+            { q: "ใครขี้งอแงที่สุด?", a: "ข", choices: {ก: "ไตเติ้ล", ข: "เธอ"} },
+            { q: "ใครขี้กลัวที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} },
+            { q: "ใครขี้งอนที่สุด?", a: "ข", choices: {ก: "ไตเติ้ล", ข: "เธอ"} },
+            { q: "ใครดื้อที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} }
+        ];
+
+        let currentStep = 0;
+        let score = 0;
+
+        function handleChoice(picked) {
+            if (picked === quizData[currentStep].a) {
+                score++;
+                createHeart();
+            }
+
+            currentStep++;
+            if (currentStep < quizData.length) {
+                updateQuestion();
+            } else {
+                showFinalResult();
+            }
+        }
+
+        function updateQuestion() {
+            document.getElementById('step-counter').innerText = `คำถามข้อที่ ${currentStep + 1}/5`;
+            document.getElementById('question').innerText = quizData[currentStep].q;
+            document.getElementById('choice-a').innerText = quizData[currentStep].choices.ก;
+            document.getElementById('choice-b').innerText = quizData[currentStep].choices.ข;
+        }
+
+        function showFinalResult() {
+            document.getElementById('quiz-page').style.display = 'none';
+            if (score === 5) {
+                document.getElementById('success-page').style.display = 'block';
+            } else {
+                document.getElementById('result-page').style.display = 'block';
+                document.getElementById('result-text').innerText = `ตอบถูกไปแค่ ${score} ข้อเอง ต้องถูกหมดน้า!`;
+            }
+        }
+
+        function resetQuiz() {
+            currentStep = 0; score = 0;
+            document.getElementById('quiz-page').style.display = 'block';
+            document.getElementById('result-page').style.display = 'none';
+            updateQuestion();
+        }
+
+        function growFlowers() {
+            const count = document.getElementById('flower-count').value;
+            const garden = document.getElementById('flower-garden');
+            garden.innerHTML = '';
+            const max = Math.min(count, 100); // จำกัดไว้ที่ 100 กันค้าง
+            for(let i=0; i < max; i++) {
+                setTimeout(() => {
+                    const rose = document.createElement('span');
+                    rose.classList.add('rose');
+                    rose.innerHTML = '🌹';
+                    garden.appendChild(rose);
+                }, i * 50);
+            }
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 80 + 10 + '%';
+            heart.style.top = '80%';
+            document.body.appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 2000);
+        }
+    </script>
+</body>
+</html>
