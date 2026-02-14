@@ -24,7 +24,6 @@
         h2 { color: var(--primary-pink); font-size: 1.3rem; margin-bottom: 25px; min-height: 3em; display: flex; align-items: center; justify-content: center; }
 
         .choice-container { display: grid; gap: 15px; }
-
         .choice-btn {
             width: 100%; padding: 15px; background: white;
             color: var(--primary-pink); border: 2px solid #ffccd5;
@@ -33,32 +32,66 @@
         }
         .choice-btn:active { background: var(--primary-pink); color: white; transform: scale(0.98); }
 
-        /* ผลลัพธ์ */
-        #result-page, #success-page { display: none; }
-        .gift-box { font-size: 60px; margin-bottom: 10px; }
-        
-        #flower-garden {
-            display: flex; flex-wrap: wrap; justify-content: center;
-            gap: 5px; margin-top: 20px; max-height: 200px; overflow-y: auto;
-            padding: 10px; border-top: 1px dashed #ffccd5;
-        }
-        .rose { font-size: 30px; animation: pop 0.5s ease-out; }
-        
-        input[type="number"] {
-            width: 80px; padding: 10px; border-radius: 10px;
-            border: 2px solid #ffccd5; text-align: center; font-size: 1.2rem;
+        /* Pop-up Overlay */
+        #modal-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); /* พื้นหลังดำมืดลง */
+            z-index: 100; justify-content: center; align-items: center;
         }
 
-        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-        .heart { position: absolute; color: var(--primary-pink); font-size: 20px; animation: moveUp 2s linear forwards; pointer-events: none; }
-        @keyframes moveUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
+        .modal-content {
+            background: white; width: 90%; max-width: 360px;
+            padding: 30px; border-radius: 25px; text-align: center;
+            position: relative; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* ส่วนของช่อดอกไม้แบบ Generate */
+        .bouquet-wrapper {
+            position: relative; width: 200px; height: 250px;
+            margin: 20px auto; background: #fefefe;
+            border-radius: 0 0 100px 100px;
+        }
+
+        /* กระดาษห่อช่อดอกไม้ */
+        .wrapper-paper {
+            position: absolute; bottom: 0; width: 100%; height: 120px;
+            background: #ffccd5; clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+            z-index: 2; display: flex; align-items: center; justify-content: center;
+        }
+        .ribbon { font-size: 40px; margin-top: 20px; z-index: 3; }
+
+        /* พื้นที่สำหรับดอกไม้ที่จะงอกออกมา */
+        #flower-spawn-area {
+            position: absolute; top: 0; left: 0; width: 100%; height: 180px;
+            z-index: 1; overflow: visible;
+        }
+
+        .rose-item {
+            position: absolute; font-size: 28px;
+            animation: bloom 0.5s ease-out forwards;
+            transform-origin: bottom center;
+        }
+
+        @keyframes bloom {
+            0% { transform: scale(0) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* อื่นๆ */
+        #result-page, #success-page { display: none; }
+        input[type="number"] {
+            width: 100px; padding: 12px; border-radius: 12px;
+            border: 2px solid #ffccd5; text-align: center; font-size: 1.3rem; margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
         <div id="quiz-page">
-            <p id="step-counter" style="color: #ff8fa3; font-size: 0.9rem; margin-bottom: 5px;">คำถามข้อที่ 1/5</p>
+            <p id="step-counter" style="color: #ff8fa3; font-size: 0.9rem;">คำถามข้อที่ 1/5</p>
             <h2 id="question">ใครกินเก่งที่สุด?</h2>
             <div class="choice-container">
                 <button class="choice-btn" onclick="handleChoice('ก')">ก. <span id="choice-a">เธอ</span></button>
@@ -67,21 +100,33 @@
         </div>
 
         <div id="result-page">
-            <div class="gift-box">😢</div>
-            <h2 id="result-text">ตอบผิดไปนิดนึง!</h2>
-            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">เอาใหม่นะ สู้ๆ!</button>
+            <div style="font-size: 60px;">😢</div>
+            <h2 id="result-text">ตอบผิดน้าาา!</h2>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">ลองใหม่นะ</button>
         </div>
 
         <div id="success-page">
-            <div class="gift-box">💖</div>
+            <div style="font-size: 60px;">💖</div>
             <h2>เก่งมาก! ตอบถูกหมดเลย</h2>
-            <p>อยากได้ดอกไม้กี่ดอกครับคนดี?</p>
-            <div style="margin: 20px 0;">
-                <input type="number" id="flower-count" min="1" max="100" placeholder="0">
-                <button onclick="growFlowers()" style="width: auto; padding: 10px 20px; background: var(--primary-pink); color:white; border:none; border-radius:10px;">เสกช่อดอกไม้!</button>
+            <p>อยากได้ดอกไม้กี่ดอกครับ?</p>
+            <input type="number" id="flower-count" min="1" max="50" value="9">
+            <button onclick="generateBouquet()" style="width: 100%; padding: 15px; background: var(--primary-pink); color:white; border:none; border-radius:15px; font-weight: bold;">เสกช่อดอกไม้ให้เธอ 🌹</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-pink); margin: 0;">ให้เธอนะครับ ❤️</h3>
+            
+            <div class="bouquet-wrapper">
+                <div id="flower-spawn-area"></div>
+                <div class="wrapper-paper">
+                    <div class="ribbon">🎀</div>
+                </div>
             </div>
-            <div id="flower-garden"></div>
-            <p style="color: #999; font-size: 0.8rem; margin-top: 15px;">รักเธอนะจ๊ะ สุขสันต์วันวาเลนไทน์!</p>
+
+            <p id="flower-msg" style="font-weight: bold;"></p>
+            <button class="choice-btn" onclick="closeModal()">รับไว้แล้ว (ปิด)</button>
         </div>
     </div>
 
@@ -94,21 +139,13 @@
             { q: "ใครดื้อที่สุด?", a: "ก", choices: {ก: "เธอ", ข: "ไตเติ้ล"} }
         ];
 
-        let currentStep = 0;
-        let score = 0;
+        let currentStep = 0, score = 0;
 
         function handleChoice(picked) {
-            if (picked === quizData[currentStep].a) {
-                score++;
-                createHeart();
-            }
-
+            if (picked === quizData[currentStep].a) score++;
             currentStep++;
-            if (currentStep < quizData.length) {
-                updateQuestion();
-            } else {
-                showFinalResult();
-            }
+            if (currentStep < quizData.length) updateQuestion();
+            else showFinalResult();
         }
 
         function updateQuestion() {
@@ -120,11 +157,10 @@
 
         function showFinalResult() {
             document.getElementById('quiz-page').style.display = 'none';
-            if (score === 5) {
-                document.getElementById('success-page').style.display = 'block';
-            } else {
+            if (score === 5) document.getElementById('success-page').style.display = 'block';
+            else {
                 document.getElementById('result-page').style.display = 'block';
-                document.getElementById('result-text').innerText = `ตอบถูกไปแค่ ${score} ข้อเอง ต้องถูกหมดน้า!`;
+                document.getElementById('result-text').innerText = `ถูกไปแค่ ${score} ข้อเอง... ต้องถูกหมดน้า!`;
             }
         }
 
@@ -135,29 +171,41 @@
             updateQuestion();
         }
 
-        function growFlowers() {
+        // ระบบ Generate ดอกไม้ในช่อเดียว
+        function generateBouquet() {
             const count = document.getElementById('flower-count').value;
-            const garden = document.getElementById('flower-garden');
-            garden.innerHTML = '';
-            const max = Math.min(count, 100); // จำกัดไว้ที่ 100 กันค้าง
+            const area = document.getElementById('flower-spawn-area');
+            const overlay = document.getElementById('modal-overlay');
+            
+            if (count <= 0) return alert("ใส่จำนวนดอกไม้ก่อนน้า");
+
+            area.innerHTML = '';
+            overlay.style.display = 'flex';
+            document.getElementById('flower-msg').innerText = `กุหลาบ ${count} ดอกแทนความรักของเค้า!`;
+
+            const max = Math.min(count, 50); // จำกัด 50 ดอกเพื่อความสวยงามของช่อ
             for(let i=0; i < max; i++) {
                 setTimeout(() => {
-                    const rose = document.createElement('span');
-                    rose.classList.add('rose');
+                    const rose = document.createElement('div');
+                    rose.classList.add('rose-item');
                     rose.innerHTML = '🌹';
-                    garden.appendChild(rose);
-                }, i * 50);
+                    
+                    // สุ่มตำแหน่งให้อยู่ในทรงพุ่มของช่อดอกไม้
+                    const left = Math.random() * 70 + 15; // 15% - 85%
+                    const top = Math.random() * 60 + 10;  // 10% - 70%
+                    const rotate = Math.random() * 40 - 20; // -20 ถึง 20 องศา
+
+                    rose.style.left = left + '%';
+                    rose.style.top = top + '%';
+                    rose.style.transform = `rotate(${rotate}deg)`;
+                    
+                    area.appendChild(rose);
+                }, i * 100);
             }
         }
 
-        function createHeart() {
-            const heart = document.createElement('div');
-            heart.classList.add('heart');
-            heart.innerHTML = '❤️';
-            heart.style.left = Math.random() * 80 + 10 + '%';
-            heart.style.top = '80%';
-            document.body.appendChild(heart);
-            setTimeout(() => { heart.remove(); }, 2000);
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
         }
     </script>
 </body>
