@@ -24,7 +24,7 @@
         h2 { color: var(--primary-pink); font-size: 1.3rem; margin-bottom: 25px; min-height: 3em; display: flex; align-items: center; justify-content: center; }
 
         /* Quiz Styles */
-        .choice-container { display: grid; gap: 15px; }
+        .choice-container { display: grid; gap: 15px; position: relative; z-index: 20; }
         .choice-btn {
             width: 100%; padding: 15px; background: white;
             color: var(--primary-pink); border: 2px solid #ffccd5;
@@ -36,7 +36,7 @@
         /* Wheel Styles */
         #success-page { display: none; }
         .wheel-box {
-            position: relative; width: 300px; height: 300px;
+            position: relative; width: 280px; height: 280px;
             margin: 0 auto 30px auto; border: 5px solid white;
             border-radius: 50%; box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
@@ -44,6 +44,8 @@
             width: 100%; height: 100%; border-radius: 50%;
             position: relative; overflow: hidden;
             transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            /* แก้ไขให้กงล้อไม่บังการกดตอนที่ยังไม่แสดงผล */
+            pointer-events: none; 
         }
         .pointer {
             position: absolute; top: -20px; left: 50%;
@@ -55,12 +57,12 @@
             position: absolute; width: 50%; height: 50%;
             transform-origin: 100% 100%; left: 0; top: 0;
             display: flex; align-items: center; justify-content: center;
-            color: #333; font-weight: bold; font-size: 12px;
+            color: #333; font-weight: bold; font-size: 11px;
             padding-right: 20px;
         }
         .sector span {
             transform: rotate(45deg); display: block; text-align: center;
-            width: 80px; line-height: 1.2;
+            width: 70px; line-height: 1.2;
         }
 
         /* Modal */
@@ -134,8 +136,8 @@
         let currentStep = 0, score = 0;
         let isSpinning = false;
 
-        // --- Quiz Logic ---
         function handleChoice(picked) {
+            console.log("Picked:", picked); // เช็คว่าฟังก์ชันทำงานไหม
             if (picked === quizData[currentStep].a) score++;
             currentStep++;
             if (currentStep < quizData.length) updateQuestion();
@@ -167,9 +169,9 @@
             updateQuestion();
         }
 
-        // --- Wheel Logic ---
         function createWheel() {
             const wheel = document.getElementById('wheel');
+            wheel.innerHTML = ''; // เคลียร์ของเก่าก่อนสร้างใหม่
             const numPrizes = prizes.length;
             const angleSize = 360 / numPrizes;
 
@@ -177,12 +179,10 @@
                 const sector = document.createElement('div');
                 sector.className = 'sector';
                 sector.style.backgroundColor = colors[i];
-                // หมุนตำแหน่งของแต่ละช่อง
                 sector.style.transform = `rotate(${i * angleSize}deg) skewY(${90 - angleSize}deg)`;
                 
                 const span = document.createElement('span');
                 span.innerText = text;
-                // ปรับมุมตัวหนังสือให้ตั้งตรง (กึ่งกลางช่อง)
                 span.style.transform = `skewY(-${90 - angleSize}deg) rotate(${angleSize / 2}deg)`;
                 
                 sector.appendChild(span);
@@ -198,13 +198,10 @@
             const numPrizes = prizes.length;
             const angleSize = 360 / numPrizes;
             
-            // สุ่มรางวัลล่วงหน้า
             const winningIndex = Math.floor(Math.random() * numPrizes);
             const prizeName = prizes[winningIndex];
 
-            // คำนวณองศาที่จะหยุด (เข็มอยู่ด้านบนคือตำแหน่ง 0 องศา)
-            // เราต้องหมุนกงล้อให้ช่องที่สุ่มได้ไปอยู่ที่ตำแหน่ง -90 องศา (หรือ 270)
-            const extraSpins = 5 * 360; // หมุน 5 รอบก่อนหยุด
+            const extraSpins = 5 * 360; 
             const stopAngle = extraSpins + (360 - (winningIndex * angleSize)) - (angleSize / 2);
 
             wheel.style.transform = `rotate(${stopAngle}deg)`;
@@ -213,7 +210,7 @@
                 document.getElementById('final-prize').innerText = prizeName;
                 document.getElementById('modal-overlay').style.display = 'flex';
                 isSpinning = false;
-            }, 4000); // ต้องสัมพันธ์กับ transition ใน CSS
+            }, 4000);
         }
 
         function closeModal() {
