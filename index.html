@@ -6,7 +6,7 @@
     <title>Valentine Quest ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-pink: #ff4d6d; --bg-soft: #fff0f3; }
+        :root { --primary-pink: #ff4d6d; --bg-soft: #fff0f3; --wrap-pink: #ffb1c1; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             font-family: 'Kanit', sans-serif; background-color: var(--bg-soft); 
@@ -35,55 +35,71 @@
         /* Pop-up Overlay */
         #modal-overlay {
             display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); /* พื้นหลังดำมืดลง */
+            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9);
             z-index: 100; justify-content: center; align-items: center;
         }
 
         .modal-content {
-            background: white; width: 90%; max-width: 360px;
-            padding: 30px; border-radius: 25px; text-align: center;
-            position: relative; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white; width: 90%; max-width: 380px;
+            padding: 25px; border-radius: 30px; text-align: center;
+            position: relative; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* ส่วนของช่อดอกไม้แบบ Generate */
-        .bouquet-wrapper {
-            position: relative; width: 200px; height: 250px;
-            margin: 20px auto; background: #fefefe;
-            border-radius: 0 0 100px 100px;
+        /* ดีไซน์ช่อดอกไม้แบบใหม่ */
+        .bouquet-container {
+            position: relative; width: 260px; height: 320px;
+            margin: 10px auto; overflow: visible;
         }
 
-        /* กระดาษห่อช่อดอกไม้ */
-        .wrapper-paper {
-            position: absolute; bottom: 0; width: 100%; height: 120px;
-            background: #ffccd5; clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
-            z-index: 2; display: flex; align-items: center; justify-content: center;
+        /* กระดาษห่อหลายชั้น */
+        .wrap-layer {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--wrap-pink); z-index: 2;
         }
-        .ribbon { font-size: 40px; margin-top: 20px; z-index: 3; }
+        .wrap-outer {
+            width: 180px; height: 140px;
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+            background: linear-gradient(180deg, #ffc2d1 0%, #ff8fa3 100%);
+            border-radius: 0 0 40px 40px;
+        }
+        .wrap-inner {
+            width: 200px; height: 100px; bottom: 60px;
+            background: rgba(255, 255, 255, 0.3);
+            clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%);
+            z-index: 3;
+        }
+        .ribbon {
+            position: absolute; bottom: 40px; left: 50%;
+            transform: translateX(-50%); z-index: 5; font-size: 45px;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1));
+        }
 
-        /* พื้นที่สำหรับดอกไม้ที่จะงอกออกมา */
+        /* พื้นที่ดอกไม้ */
         #flower-spawn-area {
-            position: absolute; top: 0; left: 0; width: 100%; height: 180px;
-            z-index: 1; overflow: visible;
+            position: absolute; top: 0; left: 50%;
+            transform: translateX(-50%); width: 220px; height: 180px;
+            z-index: 1; /* อยู่หลังกระดาษห่อ */
         }
 
         .rose-item {
-            position: absolute; font-size: 28px;
-            animation: bloom 0.5s ease-out forwards;
-            transform-origin: bottom center;
+            position: absolute; font-size: 32px;
+            animation: bloom 0.6s ease-out forwards;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
         }
 
         @keyframes bloom {
-            0% { transform: scale(0) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
+            0% { transform: scale(0) translateY(40px) rotate(-10deg); opacity: 0; }
+            100% { transform: scale(1) translateY(0) rotate(var(--r)); opacity: 1; }
         }
 
         @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* อื่นๆ */
+        /* UI อื่นๆ */
         #result-page, #success-page { display: none; }
         input[type="number"] {
-            width: 100px; padding: 12px; border-radius: 12px;
-            border: 2px solid #ffccd5; text-align: center; font-size: 1.3rem; margin-bottom: 15px;
+            width: 120px; padding: 12px; border-radius: 15px;
+            border: 2px solid #ffccd5; text-align: center; font-size: 1.4rem; font-weight: bold;
+            color: var(--primary-pink); outline: none;
         }
     </style>
 </head>
@@ -91,7 +107,7 @@
 
     <div class="card">
         <div id="quiz-page">
-            <p id="step-counter" style="color: #ff8fa3; font-size: 0.9rem;">คำถามข้อที่ 1/5</p>
+            <p id="step-counter" style="color: #ff8fa3; font-weight: bold;">ข้อที่ 1/5 ❤️</p>
             <h2 id="question">ใครกินเก่งที่สุด?</h2>
             <div class="choice-container">
                 <button class="choice-btn" onclick="handleChoice('ก')">ก. <span id="choice-a">เธอ</span></button>
@@ -102,31 +118,32 @@
         <div id="result-page">
             <div style="font-size: 60px;">😢</div>
             <h2 id="result-text">ตอบผิดน้าาา!</h2>
-            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">ลองใหม่นะ</button>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white;" onclick="resetQuiz()">ลองใหม่นะ สู้ๆ!</button>
         </div>
 
         <div id="success-page">
             <div style="font-size: 60px;">💖</div>
-            <h2>เก่งมาก! ตอบถูกหมดเลย</h2>
-            <p>อยากได้ดอกไม้กี่ดอกครับ?</p>
-            <input type="number" id="flower-count" min="1" max="50" value="9">
-            <button onclick="generateBouquet()" style="width: 100%; padding: 15px; background: var(--primary-pink); color:white; border:none; border-radius:15px; font-weight: bold;">เสกช่อดอกไม้ให้เธอ 🌹</button>
+            <h2 style="min-height: auto; margin-bottom: 10px;">เก่งที่สุดเลย!</h2>
+            <p>อยากได้กุหลาบกี่ดอกครับคนดี?</p>
+            <input type="number" id="flower-count" min="1" max="100" value="9">
+            <p style="font-size: 0.8rem; color: #ff8fa3;">(แนะนำ 1-50 ดอกกำลังสวยครับ)</p>
+            <button onclick="generateBouquet()" style="width: 100%; padding: 18px; background: var(--primary-pink); color:white; border:none; border-radius:20px; font-weight: bold; font-size: 1.2rem; cursor: pointer; margin-top: 10px;">เสกช่อดอกไม้พรีเมียม 🌹</button>
         </div>
     </div>
 
     <div id="modal-overlay">
         <div class="modal-content">
-            <h3 style="color: var(--primary-pink); margin: 0;">ให้เธอนะครับ ❤️</h3>
+            <h3 style="color: var(--primary-pink); margin-top: 0;">ให้เธอนะครับ ❤️</h3>
             
-            <div class="bouquet-wrapper">
+            <div class="bouquet-container">
                 <div id="flower-spawn-area"></div>
-                <div class="wrapper-paper">
-                    <div class="ribbon">🎀</div>
-                </div>
+                <div class="wrap-layer wrap-outer"></div>
+                <div class="wrap-layer wrap-inner"></div>
+                <div class="ribbon">🎀</div>
             </div>
 
-            <p id="flower-msg" style="font-weight: bold;"></p>
-            <button class="choice-btn" onclick="closeModal()">รับไว้แล้ว (ปิด)</button>
+            <p id="flower-msg" style="font-weight: bold; font-size: 1.1rem; color: #333; margin: 10px 0;"></p>
+            <button class="choice-btn" style="background: var(--primary-pink); color: white; border: none;" onclick="closeModal()">รับไว้ด้วยความรัก (ปิด)</button>
         </div>
     </div>
 
@@ -149,7 +166,7 @@
         }
 
         function updateQuestion() {
-            document.getElementById('step-counter').innerText = `คำถามข้อที่ ${currentStep + 1}/5`;
+            document.getElementById('step-counter').innerText = `ข้อที่ ${currentStep + 1}/5 ❤️`;
             document.getElementById('question').innerText = quizData[currentStep].q;
             document.getElementById('choice-a').innerText = quizData[currentStep].choices.ก;
             document.getElementById('choice-b').innerText = quizData[currentStep].choices.ข;
@@ -171,36 +188,40 @@
             updateQuestion();
         }
 
-        // ระบบ Generate ดอกไม้ในช่อเดียว
         function generateBouquet() {
             const count = document.getElementById('flower-count').value;
             const area = document.getElementById('flower-spawn-area');
             const overlay = document.getElementById('modal-overlay');
             
-            if (count <= 0) return alert("ใส่จำนวนดอกไม้ก่อนน้า");
+            if (count <= 0) return alert("ใส่จำนวนดอกไม้ก่อนน้าคนเก่ง");
 
             area.innerHTML = '';
             overlay.style.display = 'flex';
-            document.getElementById('flower-msg').innerText = `กุหลาบ ${count} ดอกแทนความรักของเค้า!`;
+            document.getElementById('flower-msg').innerText = `กุหลาบ ${count} ดอก สำหรับคนพิเศษ`;
 
-            const max = Math.min(count, 50); // จำกัด 50 ดอกเพื่อความสวยงามของช่อ
+            const max = Math.min(count, 100); 
             for(let i=0; i < max; i++) {
                 setTimeout(() => {
                     const rose = document.createElement('div');
                     rose.classList.add('rose-item');
                     rose.innerHTML = '🌹';
                     
-                    // สุ่มตำแหน่งให้อยู่ในทรงพุ่มของช่อดอกไม้
-                    const left = Math.random() * 70 + 15; // 15% - 85%
-                    const top = Math.random() * 60 + 10;  // 10% - 70%
-                    const rotate = Math.random() * 40 - 20; // -20 ถึง 20 องศา
+                    // Logic จัดเรียงแบบกระจายพุ่ม (วงรี)
+                    const angle = Math.random() * Math.PI * 2;
+                    const radiusX = Math.random() * 80;
+                    const radiusY = Math.random() * 50;
+                    
+                    const left = 50 + (Math.cos(angle) * radiusX / 1.1);
+                    const top = 50 + (Math.sin(angle) * radiusY / 1.1);
+                    const rotate = (Math.random() * 60) - 30;
 
                     rose.style.left = left + '%';
                     rose.style.top = top + '%';
-                    rose.style.transform = `rotate(${rotate}deg)`;
+                    rose.style.setProperty('--r', rotate + 'deg');
+                    rose.style.zIndex = Math.floor(top); // ให้ดอกล่างทับดอกบนแบบสมจริง
                     
                     area.appendChild(rose);
-                }, i * 100);
+                }, i * 60);
             }
         }
 
